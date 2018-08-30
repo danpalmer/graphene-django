@@ -114,6 +114,12 @@ class GraphQLView(View):
             show_graphiql = self.graphiql and self.can_display_graphiql(
                 request, data)
 
+            if show_graphiql:
+                return self.render_graphiql(
+                    request,
+                    graphiql_version=self.graphiql_version,
+                )
+
             if self.batch:
                 responses = [self.get_response(request, entry) for entry in data]
                 result = '[{}]'.format(','.join([response[0] for response in responses]))
@@ -121,18 +127,6 @@ class GraphQLView(View):
             else:
                 result, status_code = self.get_response(
                     request, data, show_graphiql)
-
-            if show_graphiql:
-                query, variables, operation_name, id = self.get_graphql_params(
-                    request, data)
-                return self.render_graphiql(
-                    request,
-                    graphiql_version=self.graphiql_version,
-                    query=query or '',
-                    variables=json.dumps(variables) or '',
-                    operation_name=operation_name or '',
-                    result=result or ''
-                )
 
             return HttpResponse(
                 status=status_code,
